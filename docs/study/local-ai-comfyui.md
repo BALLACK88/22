@@ -1,7 +1,7 @@
 # 내 PC에서 AI 돌리기: ComfyUI 입문
 
 > 정리일: 2026-09-26
-> 환경: Ryzen 7 9800X3D / Radeon RX 9070 XT (VRAM 16GB) / RAM 약 96GB / Windows
+> 환경: Ryzen 7 9800X3D / Radeon RX 9070 XT (VRAM 16GB) / RAM 64GB / Windows
 
 ## 목차
 1. [내 PC 사양 이해하기](#1-내-pc-사양-이해하기)
@@ -158,7 +158,10 @@ Comfy Desktop을 설치하면서 고른 것들과 이유.
 
 | 로그 내용 | 뜻 |
 |---|---|
-| `load device: cuda:0` | **GPU를 쓰고 있음.** AMD도 호환 때문에 cuda라는 이름을 쓴다 (정상) |
+| `load device: cuda:0` | GPU를 쓰고 있음. AMD도 호환 때문에 cuda라는 이름을 쓴다. **단, 어느 GPU인지는 아래 두 줄로 확인해야 한다** |
+| `AMD arch: gfx1201` / `Device: ... RX 9070 XT` | ✅ **RX 9070 XT**를 쓰는 중 |
+| `AMD arch: gfx1036` / `Device: ... AMD Radeon(TM) Graphics` | ❌ **CPU 내장 그래픽**을 쓰는 중 (매우 느림) |
+| `mat1 and mat2 shapes cannot be multiplied` | **서로 맞지 않는 모델 파일**을 섞어서 고름 (예: 이미지 모델과 텍스트 인코더 짝이 안 맞음) |
 | `... Staged` | 모델을 VRAM에 올릴 준비 |
 | `0/8 ... Model Initializing` | 첫 단계 시작 직전. **첫 실행은 몇 분 걸릴 수 있음** |
 | `2/8 [01:30<04:30, 45.0s/it]` | 8단계 중 2단계 진행, 한 단계에 45초 |
@@ -178,7 +181,15 @@ Comfy Desktop을 설치하면서 고른 것들과 이유.
 
 - 작업 관리자는 AMD의 AI 계산(ROCm/HIP)을 **제대로 표시하지 못할 때가 많다.**
 - 더 정확하게 보려면 **AMD 성능 오버레이 (Ctrl + Shift + O)** 에서 GPU 사용률과 전력(W)을 본다.
-- **VRAM이 차 있다 = 라데온을 쓰고 있다**는 증거다. CPU로 돌리면 VRAM은 비어 있다.
+- ⚠️ 작업 관리자 그래프만으로는 **어느 GPU를 쓰는지 판단하면 안 된다.** 반드시 로그의 `AMD arch`와 `Device` 줄을 확인한다.
+
+### 실제로 겪은 일: 내장 그래픽으로 돌고 있었다
+- 9800X3D에는 **CPU 내장 그래픽**(AMD Radeon(TM) Graphics, gfx1036)이 있다.
+- 윈도우에서 ComfyUI는 **GPU 하나만** 쓰는데, 내장 그래픽이 첫 번째로 잡혀서 RX 9070 XT 대신 그걸 썼다.
+- 로그에 `Total VRAM 37109 MB`처럼 **실제 VRAM(16GB)보다 큰 값**이 나오면, 시스템 RAM을 빌려 쓰는 내장 그래픽이라는 신호다.
+- 해결: **장치 관리자 → 디스플레이 어댑터 → AMD Radeon(TM) Graphics → 디바이스 사용 안 함** 후 ComfyUI 재시작
+  - 모니터 케이블은 **메인보드가 아니라 그래픽카드**에 꽂혀 있어야 한다.
+  - 되돌리려면 같은 곳에서 **디바이스 사용**을 누르면 된다.
 
 ### 멈췄을 때 해결 순서
 1. 빨간 **✕**로 취소
@@ -348,7 +359,7 @@ Breezy seaside light, warm tones, cinematic close-up.
 
 ## 13. 분야별 추천 모델
 
-> 기준: RX 9070 XT (VRAM 16GB), RAM 약 96GB, AMD
+> 기준: RX 9070 XT (VRAM 16GB), RAM 64GB, AMD
 > 모델은 빨리 바뀐다. 이름보다 **고르는 기준**을 기억할 것.
 
 ### 템플릿 이름 읽는 법
